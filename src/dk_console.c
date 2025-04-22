@@ -2,46 +2,25 @@
 // Author: David Kviloria
 // ClangFormat: Mozilla
 //
-#if !defined(DK_CONSOLE_H)
-#define DK_CONSOLE_H
+#include "dk_console.h"
+#include <string.h> // strcpy, strncpy
+// #include <math.h>   // floorf, ceilf, roundf
+#include "raymath.h" // or similar
 
-#if defined(__cplusplus)
-extern "C"
-{
-#endif
+// float Clamp(float value, float min, float max) {
+//   if (value < min) {
+//       return min;
+//   } else if (value > max) {
+//       return max;
+//   } else {
+//       return value;
+//   }
+// }
 
-#include <stdlib.h> // malloc
+// float Lerp(float a, float b, float t) {
+//   return a + t * (b - a);
+// }
 
-#define DK_UI_IMPLEMENTATION
-#include "dk_ui.h"
-
-#if !defined(LOG_SIZE)
-#define LOG_SIZE 1080 * 1080 // size of log buffer
-#endif
-
-  typedef struct
-  {
-    char* text;
-    int type;
-  } Log;
-
-  typedef struct
-  {
-    int log_index;
-    Log* logs;
-    Rectangle ui;
-    bool is_open;
-    int scroll;
-    KeyboardKey toggle_key;
-  } Console;
-
-  void DK_ConsoleInit(Console* console, int log_size);
-
-  void DK_ConsoleUpdate(Console* console, ImUI* imui, void (*callback)(const char*));
-
-  void DK_ConsoleShutdown(Console* console, int log_size);
-
-#if defined(DK_CONSOLE_IMPLEMENTATION)
   void DK_ConsoleInit(Console* console, int log_size)
   {
     console->ui = (Rectangle){ 0.0f, 0.0f, 0.0f, 0.0f };
@@ -213,6 +192,24 @@ extern "C"
     }
   }
 
+  void DK_ConsoleLog(Console* console, const char* text, int type){
+
+    if (console->log_index >= LOG_SIZE) {
+        // Free existing text to prevent memory leaks
+        for (int i = 0; i < LOG_SIZE; i++) {
+            free(console->logs[i].text);
+            console->logs[i].text = (char*)malloc(1024);
+            memset(console->logs[i].text, 0, 1024);
+        }
+        console->log_index = 0; // Reset buffer
+    }
+
+    strncpy(console->logs[console->log_index].text, text, 1023);
+    console->logs[console->log_index].text[1023] = '\0'; // Ensure null-termination
+    console->logs[console->log_index].type = type;
+    console->log_index++;
+  }
+
   void DK_ConsoleClear(Console* console)
   {
     console->log_index = 0;
@@ -226,10 +223,3 @@ extern "C"
     free(console->logs);
   }
 
-#endif
-
-#if defined(__cplusplus)
-}
-#endif
-
-#endif // DK_CONSOLE_H

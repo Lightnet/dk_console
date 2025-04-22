@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(raylib_module LANGUAGES C CXX)
+project(raylib_dk_console LANGUAGES C CXX)
 
 # Set up cache directory for built artifacts
 set(CACHE_DIR "${CMAKE_BINARY_DIR}/cache")
@@ -38,16 +38,13 @@ if(NOT EXISTS ${RAYLIB_DLL} OR "${raylib_SOURCE_DIR}/src/raylib.h" IS_NEWER_THAN
     add_custom_target(raylib_cache DEPENDS ${RAYLIB_DLL})
 endif()
 
-# CPMAddPackage(
-#     NAME dk_console
-#     GITHUB_REPOSITORY dkvilo/dk_console
-#     GIT_TAG 1.0.0
-# )
-
-set(app_lua raylib_module)
+set(app_lua raylib_dk_console)
 # MAIN
 add_executable(${app_lua} 
-  src/main.c
+  # src/main.c
+  src/test.c
+  src/dk_console.c
+  src/dk_ui.c
 )
 
 target_compile_definitions(${app_lua} PUBLIC
@@ -82,3 +79,20 @@ if(NOT EXISTS ${RAYLIB_DLL_DEST})
   )
 endif()
 
+# Copy entire assets folder (including subdirectories) to build output
+set(ASSETS_SRC_DIR "${CMAKE_SOURCE_DIR}/Resources")  # Use quotes and forward slashes
+# set(ASSETS_DEST_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/resources")
+set(ASSETS_DEST_DIR "${CMAKE_BINARY_DIR}/$<CONFIG>/Resources")
+
+# Check if assets directory exists
+if(NOT EXISTS "${ASSETS_SRC_DIR}")
+    message(WARNING "Assets directory '${ASSETS_SRC_DIR}' does not exist. Creating empty directory in build output.")
+    # file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>/Resources)
+endif()
+
+# Add custom command to copy entire assets directory
+add_custom_command(TARGET ${app_lua} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${ASSETS_DEST_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${ASSETS_SRC_DIR}" "${ASSETS_DEST_DIR}"
+    COMMENT "Copying assets directory to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/Resources"
+)

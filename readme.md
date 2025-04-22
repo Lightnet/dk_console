@@ -1,6 +1,16 @@
-# Information:
-  This update raylib 5.5 build for window.
+# dk_console
 
+# LICENSE: MIT
+
+# Information:
+  Update to match raylib 5.5 build for window.
+
+# Notes:
+ * Clamp and Lerp from raylib.h.
+ * Split up header to c due to redine function names.
+ * CMake is not library just application build test.
+ * Rework folder to match standard layout.
+ * Some files are origin from fork github.
 
 # Dev Console
 
