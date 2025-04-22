@@ -12,12 +12,8 @@ extern "C"
 
 #include <stdlib.h> // malloc
 
-#if defined(DK_CONSOLE_IMPLEMENTATION)
 #define DK_UI_IMPLEMENTATION
 #include "dk_ui.h"
-#else
-#include "dk_ui.h"
-#endif
 
 #if !defined(LOG_SIZE)
 #define LOG_SIZE 1080 * 1080 // size of log buffer
@@ -49,7 +45,7 @@ extern "C"
   void DK_ConsoleInit(Console* console, int log_size)
   {
     console->ui = (Rectangle){ 0.0f, 0.0f, 0.0f, 0.0f };
-    console->ui.height = GetScreenHeight();
+    console->ui.height = (float)GetScreenHeight();
     console->is_open = false;
     console->log_index = 0;
     console->scroll = 0;
@@ -71,9 +67,9 @@ extern "C"
 
     if (console->is_open) {
       console->ui.height =
-        Clamp(Lerp(console->ui.height, GetScreenHeight(), 0.5f),
+        Clamp(Lerp(console->ui.height, (float)GetScreenHeight(), 0.5f),
               0.0f,
-              GetScreenHeight());
+              (float)GetScreenHeight());
       focused = true;
     } else {
       console->ui.height = Lerp(console->ui.height, 0.0f, 0.5f);
@@ -83,7 +79,7 @@ extern "C"
     DrawRectangle(0,
                   0,
                   GetScreenWidth(),
-                  console->ui.height,
+                  (int)console->ui.height,
                   Fade(imui->theme->background, 1.0f));
 
     if (console->is_open) {
@@ -163,14 +159,14 @@ extern "C"
       }
 
       console->scroll =
-        Clamp(console->scroll, min_scroll_val, console->log_index);
+        (int)Clamp((float)console->scroll, (float)min_scroll_val, (float)console->log_index);
 
       static int scroll_offset = 0;
       int real_scroll = ((console->log_index - console->scroll) * 30);
 
       scroll_offset = real_scroll;
       scroll_offset =
-        Clamp((float)scroll_offset,
+        (int)Clamp((float)scroll_offset,
               0.0f,
               (console->log_index * 30.0f) - (console->ui.height - 30.0f));
 
@@ -199,7 +195,7 @@ extern "C"
 
       static char text[1024] = "";
       Vector2 input_pos = { 0.0f, console->ui.height - 31.0f };
-      DK_DrawInputField(imui, input_pos, GetScreenWidth(), 30, text, &focused, NULL);
+      DK_DrawInputField(imui, input_pos, (float)GetScreenWidth(), 30, text, &focused, NULL);
 
       if (IsKeyPressed(KEY_ENTER)) {
         if (strlen(text) > 0) {
