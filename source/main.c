@@ -8,6 +8,12 @@
 #include <time.h>
 #include <assert.h>
 #include <ctype.h>
+#include <stdio.h>
+
+#ifdef _WIN32
+#define popen _popen
+#define pclose _pclose
+#endif
 
 #define DK_CONSOLE_IMPLEMENTATION
 #include "dk_console.h"
@@ -271,20 +277,33 @@ main(void)
 
   SetTargetFPS(60);
 
-  int fileSize = 0;
-  unsigned char* fileData = LoadFileData("Resources/font/JetBrainsMono-Regular.ttf", &fileSize);
-  int fontSize = 128;
+  // unsigned int fileSize = 0;
+  // //unsigned char* fileData = LoadFileData("", &fileSize);
+  // unsigned char* fileData = LoadFileData("Kenney-Pixel.ttf", &fileSize);
+  // // int fontSize = 128;
+  // int fontSize = 128;
 
-  imui.font = (Font*)malloc(sizeof(Font));
-  imui.font->baseSize = fontSize;
-  imui.font->glyphCount = 95;
+  // imui.font = (Font*)malloc(sizeof(Font));
+  // imui.font->baseSize = fontSize;
+  // imui.font->glyphCount = 95;
 
-  imui.font->glyphs = LoadFontData(fileData, fileSize, fontSize, 0, 0, FONT_SDF);
-  Image atlas = GenImageFontAtlas(imui.font->glyphs, &imui.font->recs, imui.font->glyphCount, fontSize, 0, 1);
-  imui.font->texture = LoadTextureFromImage(atlas);
+  // imui.font->glyphs = LoadFontData(fileData, fileSize, fontSize, 0, 0, FONT_SDF);
 
-  UnloadImage(atlas);
-  UnloadFileData(fileData);
+  // Image atlas = GenImageFontAtlas(imui.font->glyphs, &imui.font->recs, imui.font->glyphCount, fontSize, 0, 1);
+  // imui.font->texture = LoadTextureFromImage(atlas);
+
+  //Font customFont = LoadFont("Kenney-Pixel.ttf"); // Replace with actual path
+  Font customFont = LoadFont("Resources/font/JetBrainsMono-Regular.ttf"); // Replace with actual path
+  if (customFont.texture.id == 0) {
+    // Font failed to load
+    TraceLog(LOG_ERROR, "Failed to load font!");
+    // Optionally, fall back to default font
+    customFont = GetFontDefault();
+  }
+  imui.font = &customFont; // Set the font pointer
+  // UnloadFont(customFont);
+  // UnloadImage(atlas);
+  // UnloadFileData(fileData);
   SetTextureFilter(imui.font->texture, TEXTURE_FILTER_BILINEAR);
 
   while (!WindowShouldClose()) {
@@ -300,7 +319,7 @@ main(void)
   }
 
   DK_ConsoleShutdown(console_global_ptr, LOG_SIZE);
-
+  UnloadFont(customFont);
   CloseWindow();
 
   return 0;
