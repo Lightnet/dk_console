@@ -217,9 +217,33 @@
   }
 
   void DK_ConsoleShutdown(Console* console, int log_size) {
-    for (int i = 0; i < log_size; i++) {
-      free(console->logs[i].text);
+    fprintf(stderr, "DK_ConsoleShutdown: Starting...\n");
+    if (console == NULL) {
+        fprintf(stderr, "DK_ConsoleShutdown: Console is NULL\n");
+        return;
     }
+    if (console->logs == NULL) {
+        fprintf(stderr, "DK_ConsoleShutdown: Console logs is NULL\n");
+        return;
+    }
+    if (log_size <= 0) {
+        fprintf(stderr, "DK_ConsoleShutdown: Invalid log_size %d\n", log_size);
+        return;
+    }
+
+    // Free all text buffers, not just used ones, to avoid leaks
+    for (int i = 0; i < log_size; i++) {
+        if (console->logs[i].text != NULL) {
+            free(console->logs[i].text);
+            console->logs[i].text = NULL;
+        }
+    }
+
     free(console->logs);
+    console->logs = NULL;
+    console->log_index = 0;
+    console->scroll = 0;
+    console->is_open = false;
+    fprintf(stderr, "DK_ConsoleShutdown: Finished\n");
   }
 

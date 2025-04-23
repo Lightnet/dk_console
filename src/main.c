@@ -104,52 +104,54 @@ double evaluateRPN(const char *expr) {
   return result;
 }
 
-void
-CustomLog(int msgType, const char* text, va_list args)
-{
-  assert(console_global_ptr != NULL);
+void CustomLog(int msgType, const char* text, va_list args) {
+  if (console_global_ptr == NULL || console_global_ptr->logs == NULL) {
+      fprintf(stderr, "CustomLog: Invalid console or logs array\n");
+      return;
+  }
+  if (text == NULL) {
+      fprintf(stderr, "CustomLog: Text is NULL\n");
+      return;
+  }
+
+  // Format the log message
   static char buffer[1024] = { 0 };
+  vsprintf_s(buffer, sizeof(buffer), text, args);
 
   char timeStr[64] = { 0 };
   time_t now = time(NULL);
   struct tm* tm_info = localtime(&now);
-
   strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
-  vsprintf(buffer, text, args);
 
-  char* finalBuffer = (char*)malloc(1024);
-  memset(finalBuffer, 0, 1024);
-  sprintf(finalBuffer, "%s %s", timeStr, buffer);
+  char finalBuffer[1024] = { 0 };
+  sprintf_s(finalBuffer, sizeof(finalBuffer), "%s %s", timeStr, buffer);
 
   const char* msgTypeStr = "Unknown";
   switch (msgType) {
-    case 2:
-      msgTypeStr = "(Debug)";
-      break;
-    case 3:
-      msgTypeStr = "(Info)";
-      break;
-    case 4:
-      msgTypeStr = "(Warning)";
-      break;
-    case 5:
-      msgTypeStr = "(Error)";
-      break;
-    case 6:
-      msgTypeStr = "(Fatal)";
-      break;
+      case 2: msgTypeStr = "(Debug)"; break;
+      case 3: msgTypeStr = "(Info)"; break;
+      case 4: msgTypeStr = "(Warning)"; break;
+      case 5: msgTypeStr = "(Error)"; break;
+      case 6: msgTypeStr = "(Fatal)"; break;
   }
 
-  char* finalBuffer2 = (char*)malloc(1024);
-  memset(finalBuffer2, 0, 1024);
-  sprintf(finalBuffer2, "%s %s", msgTypeStr, finalBuffer);
+  char finalBuffer2[1024] = { 0 };
+  sprintf_s(finalBuffer2, sizeof(finalBuffer2), "%s %s", msgTypeStr, finalBuffer);
 
-  free(finalBuffer);
-
-  if (console_global_ptr != NULL) {
-    console_global_ptr->logs[console_global_ptr->log_index++] =
-      (Log){ .text = finalBuffer2, .type = msgType };
+  // Check buffer size
+  if (console_global_ptr->log_index >= LOG_SIZE) {
+      fprintf(stderr, "CustomLog: Log buffer full, resetting\n");
+      for (int i = 0; i < LOG_SIZE; i++) {
+          memset(console_global_ptr->logs[i].text, 0, 1024);
+      }
+      console_global_ptr->log_index = 0;
   }
+
+  // Copy finalBuffer2 into the pre-allocated text buffer
+  strncpy(console_global_ptr->logs[console_global_ptr->log_index].text, finalBuffer2, 1023);
+  console_global_ptr->logs[console_global_ptr->log_index].text[1023] = '\0';
+  console_global_ptr->logs[console_global_ptr->log_index].type = msgType;
+  console_global_ptr->log_index++;
 }
 
 void echo(const char* argv)
@@ -197,7 +199,6 @@ void help(const char* args)
   }
 }
 
-
 void mathEval(const char* args)
 {
   double result = evaluateRPN(args);
@@ -223,9 +224,7 @@ void shell(const char* args)
 }
 #endif
 
-void
-console_handler(const char* command)
-{
+void console_handler(const char* command){
 
   char* command_buff = (char*)malloc(strlen(command) + 1);
   strcpy(command_buff, command);
@@ -248,9 +247,7 @@ console_handler(const char* command)
   free(message_buff);
 }
 
-int
-main(void)
-{
+int main(void){
 
   SetTraceLogCallback(CustomLog);
 
@@ -321,6 +318,7 @@ main(void)
   DK_ConsoleShutdown(console_global_ptr, LOG_SIZE);
   UnloadFont(customFont);
   CloseWindow();
+  printf("finish\n");
 
   return 0;
 }

@@ -41,8 +41,8 @@ endif()
 set(app_lua raylib_dk_console)
 # MAIN
 add_executable(${app_lua} 
-  # src/main.c
-  src/test.c
+  src/main.c
+  # src/test.c
   src/dk_console.c
   src/dk_ui.c
 )
