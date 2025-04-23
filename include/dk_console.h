@@ -26,8 +26,7 @@ typedef struct
   int type;
 } Log;
 
-typedef struct
-{
+typedef struct{
   int log_index;
   Log* logs;
   Rectangle ui;

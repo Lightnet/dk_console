@@ -4,13 +4,25 @@
 
 # Information:
   Update to match raylib 5.5 build for window.
+  
+# Inputs:
+- Tab key toggle to open dev console.
+- Input text for keyboard chars.
+- Arrow Up and down for scroll text. 
+- Mouse wheel scroll for scroll text.
+
+## Notes:
+- Using scroll index which take a while to move text content. Was to keep it simple.
+- Delay input lerp for toggle was insert when toggle open.
 
 # Notes:
  * Clamp and Lerp from raylib.h.
- * Split up header to c due to redine function names.
+ * Split up header to c due to redine function names. Reason for other project require module setup.
  * CMake is not library just application build test.
  * Rework folder to match standard layout.
  * Some files are origin from fork github.
+ * #define LOG_SIZE 10000 cap I think 11 MB. Change you want.
+ * 
 
 # Dev Console
 

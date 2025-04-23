@@ -171,24 +171,27 @@
           DrawTextEx(*imui->font, console->logs[i].text, pos, 20, 1, colors[0]);
         }
       }
+      // prevent key insert from toggle open like " ` "
+      if (console->ui.height > (float)(GetScreenHeight()/2) ){        
+        static char text[1024] = "";
+        Vector2 input_pos = { 0.0f, console->ui.height - 31.0f };
+        // Here the input keys and draw
+        DK_DrawInputField(imui, input_pos, (float)GetScreenWidth(), 30, text, &focused, NULL);
 
-      static char text[1024] = "";
-      Vector2 input_pos = { 0.0f, console->ui.height - 31.0f };
-      DK_DrawInputField(imui, input_pos, (float)GetScreenWidth(), 30, text, &focused, NULL);
+        if (IsKeyPressed(KEY_ENTER)) {
+          if (strlen(text) > 0) {
+            if (console->log_index >= LOG_SIZE) {
+              console->log_index = 0;
+            }
 
-      if (IsKeyPressed(KEY_ENTER)) {
-        if (strlen(text) > 0) {
-          if (console->log_index >= LOG_SIZE) {
-            console->log_index = 0;
+            if (callback != NULL) {
+              callback(text);
+            }
+
+            strcpy(text, "");
           }
-
-          if (callback != NULL) {
-            callback(text);
-          }
-
-          strcpy(text, "");
         }
-      }
+      } 
     }
   }
 
